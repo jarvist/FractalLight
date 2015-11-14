@@ -4,6 +4,8 @@
 
 Unbelievably the 1D version of the code compiled as is, and started running & finding eigenmodes! The 2D version (which makes pretty pictures) fails to compile with a linker warning, probably due to bounds checking / 32/64bit failure.
 
+![Lens description](lens.png)
+
 ## Abstract (from the 2006 MSci report)
 
 Codes were written to simulate the propagation of monochromatic light

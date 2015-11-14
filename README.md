@@ -1,5 +1,7 @@
 # FractalLight
 
+!(cavity_sim.png?raw=true "1D simulation")
+
 ## Abstract (from the 2006 MSci report)
 
 Codes were written to simulate the propagation of monochromatic light

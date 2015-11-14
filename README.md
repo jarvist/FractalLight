@@ -6,6 +6,10 @@ Unbelievably the 1D version of the code compiled as is, and started running & fi
 
 ![Lens description](lens.png)
 
+Example from 2006 of generated 2D modes:
+
+[![2006 era modes](http://img.youtube.com/vi/-dJPs1nPTjM/0.jpg)](http://www.youtube.com/watch?v=-dJPs1nPTjM)
+
 ## Abstract (from the 2006 MSci report)
 
 Codes were written to simulate the propagation of monochromatic light

@@ -15,7 +15,7 @@
 
 #define TWO_DIMENSIONAL
 
-#define N (1028) //*16)
+#define N (2048) //*16)
 #define G (0.4) 	//guard band - expressed as fraction of grid we SHOULD uss
 #define TOLERANCE 0.001	//tolerance of points in testing for eigenmode
 #define SAMPLEPOINTS 200	//number of random points to sample to test for Eigenmode
@@ -117,6 +117,91 @@ output_ap_slice (char *name)
 	     cimag (ap[i][j]), cabs (ap[i][j]), 
 	     cabs(ap[i][j]*ap[i][j])  );
   fclose(fo);
+}
+
+// for gl output routines. These should be generalised + use central gen
+// function
+unsigned char curpic[N/2][N/2][3];
+void
+curpic_ap_picture ()
+{
+  double scr = 0.0, sci = 0.0, phi, s, v, p, q, t, f, r, g, b;
+  int i, j, mag, magmax = 0, Hi;
+  int size,bottom,top;
+  FILE *fo;
+
+
+	size=N/2;
+	bottom=N/4;
+	top=3*N/4;
+
+  for (i = bottom; i <= top; i++)	//calculate scale factor
+    for (j = bottom; j <= top; j++)
+      {
+	if (cabs (ap[i][j]) * cabs (ap[i][j]) > scr)
+	  scr = cabs (ap[i][j]) * cabs (ap[i][j]);
+      }
+
+  for (i = bottom; i < top; i++)	
+    {
+      for (j = bottom; j < top; j++)	
+	{
+	  phi = M_PI + atan2 (cimag (ap[i][j]), creal (ap[i][j]));
+	  s = 1.0;
+	  v = (cabs (ap[i][j]) * cabs (ap[i][j])) / scr;
+
+	  //HSV->RGB formula from http://en.wikipedia.org/wiki/HSV_color_space
+	  Hi = (int) (floor (phi / (M_PI / 3.0))) % 6;
+	  f = phi / (M_PI / 3.0) - floor (phi / (M_PI / 3.0));
+	  p = v * (1.0 - s);
+	  q = v * (1.0 - f * s);
+	  t = v * (1.0 - (1.0 - f) * s);
+
+	  if (Hi == 0)
+	    {
+	      r = v;
+	      g = t;
+	      b = p;
+	    }
+	  if (Hi == 1)
+	    {
+	      r = q;
+	      g = v;
+	      b = p;
+	    }
+	  if (Hi == 2)
+	    {
+	      r = p;
+	      g = v;
+	      b = t;
+	    }
+	  if (Hi == 3)
+	    {
+	      r = p;
+	      g = q;
+	      b = v;
+	    }
+	  if (Hi == 4)
+	    {
+	      r = t;
+	      g = p;
+	      b = v;
+	    }
+	  if (Hi == 5)
+	    {
+	      r = v;
+	      g = p;
+	      b = q;
+	    }
+//           printf("%f\n",f);   
+
+	  if (filter[i][j] != 0)	//if we're displaing the mask...
+	    r = g = b = v;	//make it greyscale!
+	  curpic[i-bottom][j-bottom][0]= (int) (254.0 * r);
+	  curpic[i-bottom][j-bottom][1]= (int) (254.0 * g);
+	  curpic[i-bottom][j-bottom][2]= (int) (254.0 * b);
+	}
+    }
 }
 
 

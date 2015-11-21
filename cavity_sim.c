@@ -12,9 +12,9 @@
 
 #include "pnpoly.c"		//points in a polygon detection code
 
-//#define TWO_DIMENSIONAL
+#define TWO_DIMENSIONAL
 
-#define N (1024*16)
+#define N (1024) //*16)
 #define G (0.2) 	//guard band - expressed as fraction of grid we SHOULD uss
 #define TOLERANCE 0.0001	//tolerance of points in testing for eigenmode
 #define SAMPLEPOINTS 200	//number of random points to sample to test for Eigenmode
@@ -573,12 +573,13 @@ main ()
 
   fprintf (stderr, "Plans created...N:%d\n",N);
 
-// for (M=1.5;M<1.6;M+=0.6)   
+ //for (M=1.5;M<1.6;M+=0.6)   
   for (n = 5; n < 6; n++) //n-sided polygon for aperture
 //    for (FOCAL = -2.0; FOCAL > -20.0; FOCAL -= 1.0)
       {
 //	 g1= -1.0526; //-1.01; //-1.055;
-	 g1=-1.01;
+//	 g1=-1.01;
+     g1=-1.8;
 //	 g1=-1.002;
 //	 M=1.9;
 //	 g1=(M+1.0) /(2.0*M);
@@ -601,8 +602,6 @@ main ()
 	 //EQUIVALENT LENSGUIDE CONVERSIONS
 //	 FOCAL=-(g2*L)/(2*(g1*g2-1)); //focal length of equiv lensguide - Eqn 16, GHCN notes	 
 //	 L=2*g1*L; //equivalennt freescale length - Eqn 15, GHCN notes
-	 
-
 
 	 fprintf(stderr,"M: %f L: %f Focal: %f Focal_Conversion %f N: %f Neq: %f\n",
 		 M,L,FOCAL,FOCAL_CONVERSION,
@@ -651,10 +650,8 @@ main ()
 	 for (passes = 0; passes < 10000; passes++)
 	  {
 //      fprintf(stderr,"Nsides: %d Passes %d\n",n,passes);
-//        sprintf(name,"%.10d.pnm",framecount++);
-//        output_ap_picture(name);	     
 
-	     //EQUIV LENSGUIDE
+//EQUIV LENSGUIDE
 //	        lens(FOCAL);	     
 //		propogate (L);
 		
@@ -709,9 +706,9 @@ main ()
 	     framecount++;
 //	        sprintf(name,"%.10d_%s_Mode:%d_G:%f+%fI.pnm",framecount,tmp,eigenmode_count,creal(gamma_new),cimag(gamma_new));
 //                output_ap_picture(name);
-// 	    normalise_intensity_in_cavity ();	                     
-//	     sprintf(name,"%.5d.pnm",framecount);
-  //              output_ap_picture(name);	     
+ 	    normalise_intensity_in_cavity ();	                     
+	     sprintf(name,"%.5d.pnm",framecount);
+               output_ap_picture(name);	     
 //		output_ap_slice(name);	     
 //	     exit(-1);
 

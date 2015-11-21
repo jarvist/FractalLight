@@ -14,9 +14,9 @@
 
 #define TWO_DIMENSIONAL
 
-#define N (1024) //*16)
-#define G (0.2) 	//guard band - expressed as fraction of grid we SHOULD uss
-#define TOLERANCE 0.0001	//tolerance of points in testing for eigenmode
+#define N (1028) //*16)
+#define G (0.4) 	//guard band - expressed as fraction of grid we SHOULD uss
+#define TOLERANCE 0.001	//tolerance of points in testing for eigenmode
 #define SAMPLEPOINTS 200	//number of random points to sample to test for Eigenmode
 #define MAX_EIGENS 10
 
@@ -573,23 +573,22 @@ main ()
 
   fprintf (stderr, "Plans created...N:%d\n",N);
 
- //for (M=1.5;M<1.6;M+=0.6)   
+// for (M=1.5;M<1.6;M+=0.6)   
   for (n = 5; n < 6; n++) //n-sided polygon for aperture
 //    for (FOCAL = -2.0; FOCAL > -20.0; FOCAL -= 1.0)
       {
 //	 g1= -1.0526; //-1.01; //-1.055;
 //	 g1=-1.01;
-     g1=-1.8;
-//	 g1=-1.002;
-//	 M=1.9;
+	 g1=-1.0526;
+	 M=1.6;
 //	 g1=(M+1.0) /(2.0*M);
 	 g2=g1;
 	 printf("g1=%f g2=%f\n",g1,g2);
-//	 FOCAL=(-M*L)/((M-1)*(M-1));
+	 FOCAL=(-M*L)/((M-1)*(M-1));
 //	 FOCAL=0.225;	
 	 FOCAL_CONVERSION=-g2*L/(g2-1);
 	 
-	 FOCAL=1/(2-2*g1);
+//	 FOCAL=1/(2-2*g1);
 
 	 conjugate_plane=(L/2)*sqrt((g1+1)/(g1-1)); //distance x from centre of cavity
 	 M=(-g1+sqrt(g1*g1 - 1))/(-g1-sqrt(g1*g1-1)); //Magnification of cavity
@@ -652,10 +651,13 @@ main ()
 //      fprintf(stderr,"Nsides: %d Passes %d\n",n,passes);
 
 //EQUIV LENSGUIDE
-//	        lens(FOCAL);	     
-//		propogate (L);
-		
-	     lens(FOCAL);
+	    
+        aperture_filter();		
+        lens(FOCAL);	     
+		propogate (L);
+	     
+          /* Conjugate lensing case?
+         lens(FOCAL);
              propogate(L/2-conjugate_plane);
 	     aperture_filter();
              propogate(L/2+conjugate_plane);	     
@@ -664,8 +666,8 @@ main ()
 	     propogate(L/2+conjugate_plane);
 	     aperture_filter();
 	     propogate(L/2-conjugate_plane);
-
-	     //propogate(L);
+*/
+//	     propogate(L);
 
   	      //Gamma shift application
 	      //Start of SHIFT selection
@@ -713,12 +715,12 @@ main ()
 //	     exit(-1);
 
 
-/*      printf("G_new %f + %fI cabs: %f old:new  %f\n",
+      printf("G_new %f + %fI cabs: %f old:new  %f\n",
               creal(gamma_new),cimag(gamma_new),
 	     cabs(gamma_new),
               cabs(gamma_new-gamma_old)
 	     );
-*/
+
 
           if ( passes>15 && cabs (gamma_new - gamma_old) < (double) TOLERANCE)     //see if stabailised to eigenmode by non-varying Gamma shift
 	      {

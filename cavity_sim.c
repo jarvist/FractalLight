@@ -1,6 +1,7 @@
 /* Cavity Sim
- * MSci Physics Project QOLS07, Imperial College 
+ * MSci Physics Project QOLS07, Imperial College ; Supervised by Prof Geoff New
  * Jarvist Frost & Benjamin Hall 2005-2006
+ * Rewritten and made slightly less horrible, Jarvist Moore Frost 2015
  */
 
 #include <complex.h>
@@ -52,6 +53,7 @@ double RS[N];
 
 fftw_complex gamma_shift[MAX_EIGENS];
 fftw_complex gamma_old, gamma_new;
+
 
 struct coord
 {
@@ -542,18 +544,16 @@ double rescaled_range(int start, int length)
   return ((max-min)/sd);
 }
 
-
-
-main ()
-{
-  int i, j=0, k, l, passes, n, eigenmode_flag, eigenmode_count, ap_points,shift;
-   int framecount=0;
+// Globals moved out of main function
+  int passes, n, eigenmode_flag, eigenmode_count=0, ap_points,shift;
+  int framecount=0;
   char name[100],tmp[100];
   double tmpr, tmpi, sc, total_error,Neq,conjugate_plane;
-   double gimag,greal;
-   double g1,g2,FOCAL_CONVERSION; //g-factors for laser cavity
+  double gimag,greal;
+  double g1,g2,FOCAL_CONVERSION; //g-factors for laser cavity
 
-
+void setup_fftw()
+{
 #ifdef TWO_DIMENSIONAL
   fft = fftw_plan_dft_2d (N, N,
   			  &ap[0][0], &out[0][0], FFTW_FORWARD, FFTW_ESTIMATE);
@@ -569,22 +569,20 @@ main ()
 			   &out[0][0],
 			   &ap[0][0], FFTW_BACKWARD, FFTW_ESTIMATE);
 #endif   
+  
   srand (time (NULL));
-
+  gamma_old = gamma_new = 0.0 + 0.0I;
   fprintf (stderr, "Plans created...N:%d\n",N);
+}
 
-// for (M=1.5;M<1.6;M+=0.6)   
-  for (n = 5; n < 6; n++) //n-sided polygon for aperture
-//    for (FOCAL = -2.0; FOCAL > -20.0; FOCAL -= 1.0)
-      {
+void setup_cavity_conjugate()
+{
 //	 g1= -1.0526; //-1.01; //-1.055;
 //	 g1=-1.01;
 	 g1=-1.0526;
-	 M=1.6;
 //	 g1=(M+1.0) /(2.0*M);
 	 g2=g1;
 	 printf("g1=%f g2=%f\n",g1,g2);
-	 FOCAL=(-M*L)/((M-1)*(M-1));
 //	 FOCAL=0.225;	
 	 FOCAL_CONVERSION=-g2*L/(g2-1);
 	 
@@ -608,68 +606,27 @@ main ()
 		 //((1-L/FOCAL)-1)/2.0   *(0.5*A*G*0.5*A*G/2.0)/(L*LAMBDA));
 		 Neq);
 //	 ((M-1)/2.0 * (A*G*A*G/8.0)/(L*LAMBDA)));
- 
-		 
-//   for (i=0;i<N;i++) for (j=0;j<N;j++)
-	//    shift[i][j]=0.0+0.0I;    
-	make_filter (n);
-	fprintf (stderr, "Npolygon: %d M: %f Focal: %f\n", n, M,FOCAL);
+}
 
-//   for (L=0.001;L<=0.024;L+=0.001) //10 240 10
-//     {
-//      fprintf(stderr,"Going for Length %f\n",L);
+void setup_cavity_direct()
+{
+	 M=1.1;
+	 FOCAL=(-M*L)/((M-1)*(M-1));
 
+	 //EQUIVALENT LENSGUIDE CONVERSIONS
 
-//   input_ap_picture(); //Lena
-//   
-	gamma_old = gamma_new = 0.0 + 0.0I;
+	 fprintf(stderr,"M: %f L: %f Focal: %f Focal_Conversion %f N: %f Neq: %f\n",
+		 M,L,FOCAL,FOCAL_CONVERSION,
+		 (0.5*A*G*0.5*A*G/2.0)/(L*LAMBDA),
+		 //((1-L/FOCAL)-1)/2.0   *(0.5*A*G*0.5*A*G/2.0)/(L*LAMBDA));
+		 Neq);
+//	 ((M-1)/2.0 * (A*G*A*G/8.0)/(L*LAMBDA)));
+}
 
-	for (i = 0; i < N; i++)
-#ifdef TWO_DIMENSIONAL
-	   for (j = 0; j < N; j++)
-#endif
-	    old_ap[i][j] = 0.0 + 0.0I;
-	 
-//	 for (greal=-1.0;greal<1.0;greal+=0.1)
-//	   for (gimag=-1.0;gimag<1.0;gimag+=0.1)
-//	     {
-	eigenmode_count = 0;		
-//	     gamma_shift[0]=greal+gimag*I;
-		
-	generate_initial_intensity ();
-	 
-//	        sprintf(name,"%.10d.pnm",0);
-//                output_ap_picture(name);
-//	     sprintf(name,"%.10d.log",0);
-//		output_ap_slice(name);	     
-	 
-	aperture_filter ();
-
-//	        lens(-FOCAL_CONVERSION);		 
-	 for (passes = 0; passes < 10000; passes++)
-	  {
-//      fprintf(stderr,"Nsides: %d Passes %d\n",n,passes);
-
-//EQUIV LENSGUIDE
-	    
-        aperture_filter();		
-        lens(FOCAL);	     
-		propogate (L);
-	     
-          /* Conjugate lensing case?
-         lens(FOCAL);
-             propogate(L/2-conjugate_plane);
-	     aperture_filter();
-             propogate(L/2+conjugate_plane);	     
-	     lens(FOCAL);
-	     
-	     propogate(L/2+conjugate_plane);
-	     aperture_filter();
-	     propogate(L/2-conjugate_plane);
-*/
-//	     propogate(L);
-
-  	      //Gamma shift application
+void power_method()
+{
+    int i;
+//Gamma shift application
 	      //Start of SHIFT selection
 	     /* the following code applies the shifts in a straight series 
 	      * with a gap of SPACERS between each rotated application.
@@ -677,7 +634,7 @@ main ()
 	      */
 	     
 	      shift=(passes+(SPACERS-1))%(SPACERS+eigenmode_count) - SPACERS;
-	      
+	     
 //	      if (shift>=0)
 //	       shift=eigenmode_count-shift-1;
 
@@ -703,25 +660,10 @@ main ()
 		   
 		   apply_gamma_shift(shift);
 		}
-		              
-	    gamma_new = calculate_gamma();
-	     framecount++;
-//	        sprintf(name,"%.10d_%s_Mode:%d_G:%f+%fI.pnm",framecount,tmp,eigenmode_count,creal(gamma_new),cimag(gamma_new));
-//                output_ap_picture(name);
- 	    normalise_intensity_in_cavity ();	                     
-	     sprintf(name,"%.5d.pnm",framecount);
-               output_ap_picture(name);	     
-//		output_ap_slice(name);	     
-//	     exit(-1);
+}
 
-
-      printf("G_new %f + %fI cabs: %f old:new  %f\n",
-              creal(gamma_new),cimag(gamma_new),
-	     cabs(gamma_new),
-              cabs(gamma_new-gamma_old)
-	     );
-
-
+void detect_convergence()
+{
           if ( passes>15 && cabs (gamma_new - gamma_old) < (double) TOLERANCE)     //see if stabailised to eigenmode by non-varying Gamma shift
 	      {
 		fprintf (stderr, "c@%d\n", passes);
@@ -740,14 +682,8 @@ main ()
 		 sprintf(name,"h%d.log",eigenmode_count);
 		 hurst(name);
 		 
-		 //remove the following cludge
-/*	        lens(FOCAL);
-		propogate (L);		 
-	        lens(FOCAL_CONVERSION);		 	        
-		propogate (-(0.5-conjugate_plane));
-*/
-//		 lens(FOCAL_CONVERSION); //back to full cavity
-		 lens(1/(2-2*g1)); //FOCUS as actually mirror
+/*
+ * lens(1/(2-2*g1)); //FOCUS as actually mirror
 		 propogate(0.5+conjugate_plane); //propogate forwards
 
 		 normalise_intensity_in_cavity ();	     
@@ -757,37 +693,61 @@ main ()
 		 
 		 sprintf(name,"hc%d.log",eigenmode_count);
 		 hurst(name);
-
+*/
 
 #ifdef TWO_DIMENSIONAL //if making a 2D eigenmode, output the pretty eigenmode!
 		sprintf(name,"%du_lr.pnm",eigenmode_count); 
 		output_ap_picture (name);
 #endif
-
-		 aperture_filter();
-		 propogate (2*conjugate_plane);		 
-		 sprintf(name,"%dv_lr.log",eigenmode_count);		 		 
-		 output_ap_slice(name);
-		 
-		 propogate(0.5-conjugate_plane);
-		 lens(1/(2-2*g1)); //FOCUS as actually mirror
-		 propogate(0.5-conjugate_plane);
-		 sprintf(name,"%dv_rl.log",eigenmode_count);		 		 
-		 output_ap_slice(name);
-
-		 propogate (2*conjugate_plane);		 
-		 sprintf(name,"%du_rl.log",eigenmode_count);		 		 
-		 output_ap_slice(name);		 
-#ifdef TWO_DIMENSIONAL //if making a 2D eigenmode, output the pretty eigenmode!
-		                 sprintf(name,"%du_rl.pnm",eigenmode_count);
-		                 output_ap_picture (name);
-#endif
-		 
+	 
 		eigenmode_count++;	//keep count of already discovered eigenmodes
 		passes = 0;	//reset passes so we have full range to settle to next mode
 		 gamma_old=gamma_new=0.0+0.0I; //reset gamma factors
-	      }
+	}
+}
+
+void simulate_laser_partA()
+{
+//      fprintf(stderr,"Nsides: %d Passes %d\n",n,passes);
+
+//EQUIV LENSGUIDE
+	    
+        aperture_filter();		
+        lens(FOCAL);	     
+		propogate (L);
 	     
+          /* Conjugate lensing case?
+         lens(FOCAL);
+             propogate(L/2-conjugate_plane);
+	     aperture_filter();
+             propogate(L/2+conjugate_plane);	     
+	     lens(FOCAL);
+	     
+	     propogate(L/2+conjugate_plane);
+	     aperture_filter();
+	     propogate(L/2-conjugate_plane);
+*/
+//	     propogate(L);
+
+        power_method();  //apply power method of previous eigenvectors to solution             
+	    gamma_new = calculate_gamma();
+/*      printf("G_new %f + %fI cabs: %f old:new  %f\n",
+              creal(gamma_new),cimag(gamma_new),
+	     cabs(gamma_new),
+              cabs(gamma_new-gamma_old)
+	     );
+*/
+	    framecount++;
+//	        sprintf(name,"%.10d_%s_Mode:%d_G:%f+%fI.pnm",framecount,tmp,eigenmode_count,creal(gamma_new),cimag(gamma_new));
+//                output_ap_picture(name);
+ 	    normalise_intensity_in_cavity ();	                     
+}
+
+void simulate_laser_partB()
+{
+    int i,j;
+        detect_convergence();
+     
   	    aperture_filter ();     
  	    normalise_intensity_in_cavity ();	     
 	     
@@ -799,20 +759,11 @@ main ()
 //      memcpy(old_ap,ap,sizeof(fftw_complex)*N*N);
 	     
 	    gamma_old = gamma_new;
-	    
-	    if (eigenmode_count >= MAX_EIGENS)	//once we've gathered this many modes
-	      break;		//break out the for-loop!
+}
 
-	  }
-	fprintf (stderr, "Reset\n");
-//	     }
-	 
-//      sprintf(name,"npoly%d_Foc%f_passes%.5d.pnm",n,FOCAL,passes);
-//      output_ap_picture(name);
-
-
-//        output_ap_slice((int)(L*1000));       
-      }
+void destroy_fftw()
+{
   fftw_destroy_plan (fft);
   fftw_destroy_plan (fftr);
 }
+

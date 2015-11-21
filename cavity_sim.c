@@ -15,7 +15,7 @@
 
 #define TWO_DIMENSIONAL
 
-#define N (2048) //*16)
+#define N (1024) //*16)
 #define G (0.4) 	//guard band - expressed as fraction of grid we SHOULD uss
 #define TOLERANCE 0.001	//tolerance of points in testing for eigenmode
 #define SAMPLEPOINTS 200	//number of random points to sample to test for Eigenmode
@@ -831,11 +831,12 @@ void simulate_laser_partA()
 void simulate_laser_partB()
 {
     int i,j;
-        detect_convergence();
      
   	    aperture_filter ();     
  	    normalise_intensity_in_cavity ();	     
 	     
+        detect_convergence();
+
 	    for (i = 0; i < N; i++)
 #ifdef TWO_DIMENSIONAL
 	       for (j = 0; j < N; j++)

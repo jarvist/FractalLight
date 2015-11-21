@@ -27,6 +27,8 @@ void renderScene() {
     simulate_laser_partA();
     curpic_ap_picture();
 
+    passes++;
+
     // render the texture here
     glEnable (GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

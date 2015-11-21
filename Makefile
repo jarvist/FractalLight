@@ -1,4 +1,4 @@
-all: commandlineFL
+all: glFL 
 
 glFL: glFL.c cavity_sim.c
 	gcc -o glFL glFL.c  -funroll-all-loops -funsafe-math-optimizations -O999 -finline -lm -lGL -lglut -lfftw3

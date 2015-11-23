@@ -1,7 +1,10 @@
 all: glFL 
 
 glFL: glFL.c cavity_sim.c
-	gcc -o glFL glFL.c  -funroll-all-loops -funsafe-math-optimizations -O999 -finline -lm -lGL -lglut -lfftw3
+	gcc -o glFL glFL.c  -funroll-all-loops -funsafe-math-optimizations -O4 -finline -lm -lGL -lglut -lfftw3
+
+mac: glFL.c cavity_sim.c
+	gcc -o glFL glFL.c -funroll-all-loops -funsafe-math-optimizations -O4 -finline -lm -lfftw3 -framework GLUT -framework OpenGL 
 
 commandlineFL: cavity_sim.c
 	gcc -o commandlineFL commandlineFL.c  -funroll-all-loops -O999 -finline -lm -lfftw3

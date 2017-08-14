@@ -21,11 +21,19 @@
 #define X_RES N/2 
 #define Y_RES N/2
 
+//#define MAKEMOVIE // if you want lots of .pbm outputfiles :^)
+
 //original on: http://stackoverflow.com/questions/503816/linux-fastest-way-to-draw
 void renderScene() {    
-    
+    char picfile[50];
+
     simulate_laser_partA();
     curpic_ap_picture();
+
+#ifdef MAKEMOVIE
+        sprintf(picfile,"pic-%06D.pbm",framecount); // framecount global variable updated elsewhere
+        output_ap_picture(picfile);
+#endif 
 
     passes++;
 
@@ -65,7 +73,7 @@ int main(int argc, char **argv)
     //working currently?
     setup_cavity_direct(); // Construct FOCUS and propogation
 	 
-	make_filter (5); // Make aperture polygon with this size
+	make_filter (6); // Make aperture polygon with this size
 	fprintf (stderr, "Npolygon: %d M: %f Focal: %f\n", n, M,FOCAL);
 
 //   input_ap_picture(); //Lena

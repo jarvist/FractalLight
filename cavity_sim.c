@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+//#include <omp.h> // OpenMP for the speeds
+
 #include "pnpoly.c"		//points in a polygon detection code
 
 #define TWO_DIMENSIONAL
@@ -642,6 +644,14 @@ double rescaled_range(int start, int length)
 
 void setup_fftw()
 {
+    // can't get this to compile on Mac :|
+// 2017 - let's make this multithreaded!
+//    fftw_init_threads();
+   // fftw_plan_with_nthreads(omp_get_max_threads()); // cooking on gas!
+//    fftw_plan_with_nthreads(8); // cooking on gas!
+
+
+
 #ifdef TWO_DIMENSIONAL
   fft = fftw_plan_dft_2d (N, N,
   			  &ap[0][0], &out[0][0], FFTW_FORWARD, FFTW_ESTIMATE);

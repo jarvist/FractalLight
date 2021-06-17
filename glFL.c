@@ -23,9 +23,11 @@
 
 //#define MAKEMOVIE // if you want lots of .pbm outputfiles :^)
 
+int frame, currenttime, timebase;
+
 //original on: http://stackoverflow.com/questions/503816/linux-fastest-way-to-draw
 void renderScene() {    
-    char picfile[50];
+    char picfile[50], title[50];
 
     simulate_laser_partA();
     curpic_ap_picture();
@@ -59,6 +61,21 @@ void renderScene() {
         glTexCoord2f(1.0f, 1.0f); glVertex2f( 1.0,  1.0);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0,  1.0);
     glEnd();
+
+//calculate the frames per second
+frame++;
+
+//get the current time
+currenttime = glutGet(GLUT_ELAPSED_TIME);
+
+//check if a second has passed
+if (currenttime - timebase > 1000)
+{
+sprintf(title, "VIDEO FRACTALS FPS: %4.2f", frame*1000.0/(currenttime-timebase));
+glutSetWindowTitle(title);
+timebase = currenttime;
+frame = 0;
+}
 
     glFlush();
     glutSwapBuffers();

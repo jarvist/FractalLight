@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-//#include <omp.h> // OpenMP for the speeds
+#include <omp.h> // OpenMP for the speeds
 
 #include "pnpoly.c"		//points in a polygon detection code
 
@@ -140,6 +140,7 @@ curpic_ap_picture ()
 	bottom=N/4;
 	top=3*N/4;
 
+#pragma omp parallel for
   for (i = bottom; i <= top; i++)	//calculate scale factor
     for (j = bottom; j <= top; j++)
       {
@@ -147,6 +148,7 @@ curpic_ap_picture ()
 	  scr = cabs (ap[i][j]) * cabs (ap[i][j]);
       }
 
+//race condition here, don't 'omp parallel for'
   for (i = bottom; i < top; i++)	
     {
       for (j = bottom; j < top; j++)	
@@ -384,7 +386,8 @@ propogate (double LENGTH)
   double shift;
    
   fftw_execute (fft); 
-   
+
+#pragma omp parallel for
   for (i = 0; i < N; i++)	//plane wave propogation
 #ifdef TWO_DIMENSIONAL
      for (j = 0; j < N; j++)
@@ -421,7 +424,8 @@ void lens(double f) //apply spherical lens curvature to wavefrount
 {
    int i,j=0;
    
-for (i = 0; i < N; i++)
+#pragma omp parallel for
+   for (i = 0; i < N; i++)
 #ifdef TWO_DIMENSIONAL
   for (j = 0; j < N; j++)
      ap[i][j] *=
@@ -448,6 +452,7 @@ normalise_intensity_in_cavity ()
   double sc = 0.0;
   int i, j=0;
 
+#pragma omp parallel for
   for (i = 0; i < N; i++)	//calculate scale factor
 #ifdef TWO_DIMENSIONAL
      for (j = 0; j < N; j++)
@@ -513,7 +518,8 @@ generate_initial_intensity ()
 void scale_fft() //correct for scale caused by FFT routines
 {
    int i,j;
-     for (i = 0; i < N; i++)
+#pragma omp parallel for
+   for (i = 0; i < N; i++)
 #ifdef TWO_DIMENSIONAL
        for (j = 0; j < N; j++)
            ap[i][j]/=(double)N*(double)N; //correct for scaling of FFT algo
@@ -555,6 +561,7 @@ fftw_complex calculate_gamma()
 void apply_gamma_shift(int shift)
 {
    int i,j=0;
+#pragma omp parallel for
 		 for (i = 0; i < N; i++)
 #ifdef TWO_DIMENSIONAL
      for (j = 0; j < N; j++)
@@ -646,9 +653,9 @@ void setup_fftw()
 {
     // can't get this to compile on Mac :|
 // 2017 - let's make this multithreaded!
-//    fftw_init_threads();
-   // fftw_plan_with_nthreads(omp_get_max_threads()); // cooking on gas!
-//    fftw_plan_with_nthreads(8); // cooking on gas!
+    fftw_init_threads();
+fftw_plan_with_nthreads(omp_get_max_threads()); // Follow whatever is set in OPENMP
+//    fftw_plan_with_nthreads(6); 
 
 
 
